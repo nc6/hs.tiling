@@ -8,7 +8,9 @@ local geometry = require "hs.geometry"
 local alert = require "hs.alert"
 local layouts = require "hs.tiling.layouts"
 local spaces = {}
-local settings = { layouts = {} }
+local settings = { layouts = {}
+                 , customLayout = nil
+                 }
 
 local excluded = {}
 -- navigate to layout by name
@@ -19,7 +21,7 @@ function tiling.goToLayout(name)
     space.layout = space.layoutCycle()
     i = i + 1
   end
-  if i < #settings.layouts then 
+  if i < #settings.layouts then
     alert.show(space.layout, 1)
     apply(space.windows, space.layout)
   else
@@ -63,7 +65,6 @@ function tiling.cycle(direction)
   local win = window:focusedWindow() or windows[1]
   local direction = direction or 1
   local currentIndex = fnutils.indexOf(windows, win)
-  local layout = space.layout
   if not currentIndex then return end
   nextIndex = currentIndex + direction
   if nextIndex > #windows then
@@ -80,6 +81,7 @@ function tiling.cycleLayout()
   local space = getSpace()
   space.layout = space.layoutCycle()
   alert.show(space.layout, 1)
+
   apply(space.windows, space.layout)
 end
 
@@ -118,7 +120,9 @@ function tiling.adjustMainVertical(factor)
 end
 
 function apply(windows, layout)
-  layouts[layout](windows)
+  local custom = includeCustomLayout(windows)
+  custom.layout()
+  layouts[layout](custom.windows, custom.frame)
 end
 
 function isWindowIncluded(win)
@@ -127,6 +131,26 @@ function isWindowIncluded(win)
   hasTitle = #win:title() > 0
   isTiling = not excluded[win:id()]
   return onScreen and standard and hasTitle and isTiling
+end
+
+-- Applies a custom layout, then delegates everything else to the tiling
+-- layout.
+function includeCustomLayout(windows)
+  local customLayout = settings.customLayout
+  local delegated = {}
+
+  if customLayout == nil then
+    delegated.windows = windows
+    delegated.frame = windows[1]:screen():frame()
+    delegated.layout = function() end
+  else
+    local foo = customLayout(windows)
+    delegated.windows = foo.delegatedWindows
+    delegated.frame = foo.delegatedFrame
+    delegated.layout = foo.layout
+  end
+
+  return delegated
 end
 
 -- Infer a 'space' from our existing spaces

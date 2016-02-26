@@ -1,13 +1,13 @@
 local fnutils = require "hs.fnutils"
 local layouts = {}
 
-layouts['fullscreen'] = function(windows)
+layouts['fullscreen'] = function(windows, rootframe)
   fnutils.each(windows, function(window)
     window:maximize()
   end)
 end
 
-layouts['main-vertical'] = function(windows)
+layouts['main-vertical'] = function(windows, rootframe)
   local winCount = #windows
 
   if winCount == 1 then
@@ -15,7 +15,11 @@ layouts['main-vertical'] = function(windows)
   end
 
   for index, win in pairs(windows) do
-    local frame = win:screen():frame()
+    local frame = hs.geometry.rect(rootframe.x
+                                  , rootframe.y
+                                  , rootframe.w
+                                  , rootframe.h
+                                  )
 
     if index == 1 then
       frame.w = frame.w / 2
@@ -30,7 +34,7 @@ layouts['main-vertical'] = function(windows)
   end
 end
 
-layouts['main-horizontal'] = function(windows)
+layouts['main-horizontal'] = function(windows, rootframe)
   local winCount = #windows
 
   if winCount == 1 then
@@ -38,7 +42,11 @@ layouts['main-horizontal'] = function(windows)
   end
 
   for index, win in pairs(windows) do
-    local frame = win:screen():frame()
+    local frame = hs.geometry.rect(rootframe.x
+                                  , rootframe.y
+                                  , rootframe.w
+                                  , rootframe.h
+                                  )
 
     if index == 1 then
       frame.h = frame.h / 2
@@ -53,7 +61,7 @@ layouts['main-horizontal'] = function(windows)
   end
 end
 
-layouts['columns'] = function(windows)
+layouts['columns'] = function(windows, rootframe)
   local winCount = #windows
 
   if winCount == 1 then
@@ -61,7 +69,11 @@ layouts['columns'] = function(windows)
   end
 
   for index, win in pairs(windows) do
-    local frame = win:screen():frame()
+    local frame = hs.geometry.rect(rootframe.x
+                                  , rootframe.y
+                                  , rootframe.w
+                                  , rootframe.h
+                                  )
 
     frame.w = frame.w / winCount
     frame.x = frame.x + (index - 1) * frame.w
@@ -71,7 +83,7 @@ layouts['columns'] = function(windows)
   end
 end
 
-layouts['rows'] = function(windows)
+layouts['rows'] = function(windows, rootframe)
   local winCount = #windows
 
   if winCount == 1 then
@@ -79,7 +91,11 @@ layouts['rows'] = function(windows)
   end
 
   for index, win in pairs(windows) do
-    local frame = win:screen():frame()
+    local frame = hs.geometry.rect(rootframe.x
+                                  , rootframe.y
+                                  , rootframe.w
+                                  , rootframe.h
+                                  )
 
     frame.h = frame.h / winCount
     frame.y = frame.y + (index - 1) * frame.h
@@ -89,20 +105,24 @@ layouts['rows'] = function(windows)
   end
 end
 
-layouts['gp-vertical'] = function(windows)
+layouts['gp-vertical'] = function(windows, rootframe)
   local winCount = #windows
 
   if winCount == 1 then
     return layouts['fullscreen'](windows)
   end
 
-  local width 
+  local width
   local height
   local x = 0
   local y = 0
 
   for index, win in pairs(windows) do
-    local frame = win:screen():frame()
+    local frame = hs.geometry.rect(rootframe.x
+                                  , rootframe.y
+                                  , rootframe.w
+                                  , rootframe.h
+                                  )
 
     if index == 1 then
       height = frame.h
@@ -112,13 +132,13 @@ layouts['gp-vertical'] = function(windows)
         height = height / 2
       end
       x = x + width
-    else 
+    else
       if index ~= winCount then
         width = width / 2
       end
       y = y + height
     end
-  
+
     frame.x = frame.x + x
     frame.y = frame.y + y
     frame.w = width
@@ -128,36 +148,40 @@ layouts['gp-vertical'] = function(windows)
   end
 end
 
-layouts['gp-horizontal'] = function(windows)
+layouts['gp-horizontal'] = function(windows, rootframe)
   local winCount = #windows
 
   if winCount == 1 then
     return layouts['fullscreen'](windows)
   end
 
-  local width 
+  local width
   local height
   local x = 0
   local y = 0
 
   for index, win in pairs(windows) do
-    local frame = win:screen():frame()
-  
+    local frame = hs.geometry.rect(rootframe.x
+                                  , rootframe.y
+                                  , rootframe.w
+                                  , rootframe.h
+                                  )
+
     if index == 1 then
       height = frame.h / 2
-      width  = frame.w 
+      width  = frame.w
     elseif index % 2 == 0 then
       if index ~= winCount then
         width = width / 2
       end
       y = y + height
-    else 
+    else
       if index ~= winCount then
         height = height / 2
       end
       x = x + width
     end
-  
+
     frame.x = frame.x + x
     frame.y = frame.y + y
     frame.w = width
@@ -167,7 +191,7 @@ layouts['gp-horizontal'] = function(windows)
   end
 end
 
-layouts['main-vertical-variable'] = function(windows)
+layouts['main-vertical-variable'] = function(windows, rootframe)
   local winCount = #windows
 
   if winCount == 1 then
@@ -182,13 +206,17 @@ layouts['main-vertical-variable'] = function(windows)
   end
 
   for index, win in pairs(windows) do
-    local frame = win:screen():frame()
+    local frame = hs.geometry.rect(rootframe.x
+                                  , rootframe.y
+                                  , rootframe.w
+                                  , rootframe.h
+                                  )
 
     if index == 1 then
-      frame.w = frame.w * mainVertical 
+      frame.w = frame.w * mainVertical
     else
-      frame.x = frame.x + frame.w * mainVertical 
-      frame.w = frame.w * (1 - mainVertical) 
+      frame.x = frame.x + frame.w * mainVertical
+      frame.w = frame.w * (1 - mainVertical)
       frame.h = frame.h / (winCount - 1)
       frame.y = frame.y + frame.h * (index - 2)
     end
